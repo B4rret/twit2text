@@ -1,0 +1,10 @@
+This is a little attempt of a Twitter Client in python, only for read the tweets through a text file.
+The objetive is that the program download the tweets of a tweetline periodically to that text file.
+Using a editor, with an option to reload modified files were possible read the tweetline opening the text file with this editor.
+================================================================================================================================
+Este es un pequeño intento de hacer un pequeño cliente de Twitter en python, solo para poder leer tweets a traves de un
+archivo de texto.
+El objetivo sería que el programa fuera descargando los tweets de una linea de tiempo predeterminada a ese archivo de texto.
+Luego usando un editor que tenga opción de recargar automáticamente archivos modificados, podríamos ir leyendo los tweets de
+la linea de tiempo, abriendo el archivo en este editor.
+
