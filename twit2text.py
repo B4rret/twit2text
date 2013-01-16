@@ -1,7 +1,16 @@
+#!/usr/bin/env python
+"""Little attempt of a Twitter Client in python, only for read the tweets through a text file."""
+__author__ = "B4rret"
+
 import json
 import const
 import os
-
+import codecs
+import twitter
+import threading
+import time
+import sys
+import urllib2
 
 consumer_key = ""
 consumer_secret = ""
@@ -107,12 +116,85 @@ def create_config_file():
     f.write('}')
     f.close()
 
+def write_tweets(id):
 
+    global fileOutputName
+    global twitterApi
+
+    while True:
+
+        # f = open(fileOutputName, 'w')
+        f = codecs.open(fileOutputName, encoding='utf-8', mode='a+')
+
+        if id != 0: 
+            statuses = twitterApi.GetFriendsTimeline(None, None, None, id, True, True)
+        else:
+            f.write("START\n------\n")
+            statuses = twitterApi.GetFriendsTimeline(None, None, None, None, True, True)
+
+        for s in reversed(statuses):
+            id = s.id
+            line = s.created_at + ' | @' + s.user.screen_name + ' (' + s.user.name + '):\n' + s.GetText() + '\nhttps://twitter.com/#!/' + s.user.screen_name + '/status/' + str(id) + '\n--------------------------------------------------------------------------------------------------------------------------------------------'
+            
+            #if s.urls is not None:
+            for u in s.urls :
+                line = line.replace(u.url, u.expanded_url)
+                #f.write(str(u.expanded_url) + "\n")                  
+            #else:            
+                #f.write("urls:" + str(s.urls) + "\n")
+            
+            f.write(line + "\n")
+            #print line.encode('ascii','ignore')
+        f.flush()
+        f.close()
+        time.sleep(15) # Twitter lets only 350 petitions per hour. This time wouldn't be less than 10
+
+
+def main():
+
+    global fileOutputName
+
+    global consumer_key
+    global consumer_secret
+    global access_token
+    global access_token_secret
+
+    global twitterApi
+
+    if not read_config_file():
+        #print "Oops -.- , config file doesn't exist... Creating..."
+        create_config_file()
+
+    twitterApi = twitter.Api(consumer_key, consumer_secret, access_token, access_token_secret)
+
+    #print consumer_key
+    #print consumer_secret
+    #print access_token
+    #print access_token_secret
+
+    u = twitterApi.VerifyCredentials() 
+
+    if u is None:
+        print "Keys wrong"
+        return 1
+    elif u.GetName() is None:
+        print "Keys wrong"
+        return 1
+    #else:
+    #    print "Keys ok"
+    #    print u.GetName()
+
+    auxDriveTail = os.path.splitdrive(__file__)
+    driveLetter = auxDriveTail[0]
+
+    fileOutputName = os.path.join(driveLetter, 'tws.txt')
+
+    t = threading.Thread(target=write_tweets, args=(0,))  
+    t.start()  
+    t.join()
+    return 0
+    
 ######################################################
 
-
-
-if not read_config_file():
-    #print "Oops -.- , config file doesn't exist... Creating..."
-    create_config_file()
-
+if __name__ == "__main__":
+    sys.exit(main())
