@@ -133,11 +133,23 @@ def write_tweets(id):
             statuses = twitterApi.GetFriendsTimeline(None, None, None, None, True, True)
 
         for s in reversed(statuses):
-            id = s.id
-            line = s.created_at + ' | @' + s.user.screen_name + ' (' + s.user.name + '):\n' + s.GetText() + '\nhttps://twitter.com/#!/' + s.user.screen_name + '/status/' + str(id) + '\n--------------------------------------------------------------------------------------------------------------------------------------------'
+            origStatus = s
+            rtStatus = None
+            id = origStatus.id
+            if origStatus.retweeted_status != None:
+                rtStatus = origStatus
+                origStatus = rtStatus.retweeted_status
+            
+            
+            line = origStatus.created_at + ' | @' + origStatus.user.screen_name + ' (' + origStatus.user.name + ')'
+            
+            if rtStatus != None:
+                line = line + ' rt at ' + rtStatus.created_at + ' by @' + rtStatus.user.screen_name + ' (' + rtStatus.user.name + ')'
+                    
+            line = line + ':\n' + origStatus.GetText() + '\nhttps://twitter.com/' + origStatus.user.screen_name + '/status/' + str(origStatus.id) + '\n--------------------------------------------------------------------------------------------------------------------------------------------'
             
             #if s.urls is not None:
-            for u in s.urls :
+            for u in origStatus.urls :
                 line = line.replace(u.url, u.expanded_url)
                 #f.write(str(u.expanded_url) + "\n")                  
             #else:            
